@@ -132,7 +132,7 @@ export function RulesPage() {
   const total = data.stats.pass + data.stats.reject
   return <div className="wrap">
     <h1>Reviewer rules</h1>
-    <p className="desc">The reviewer is a one-shot Hermes run that cannot write. It sees the write, the skill, the profile's skill list and the session's messages, and reads the rest itself. The rules are the <span className="mono">rules.md</span> file in the repository; change them through an agent in chat.</p>
+    <p className="desc">The reviewer is a one-shot Hermes run that cannot write. It sees the write, the skill, the profile's skill list and the session's messages, and reads the rest itself. The rules are the <span className="mono">{data.path}</span> file (the <span className="mono">rules</span> key of <span className="mono">reviewer.yaml</span>); change them through an agent in chat.</p>
     <div className="stats">
       <div className="st"><div className="v">{total}</div><div className="k">reviewed</div></div>
       <div className="st"><div className="v" style={{ color: 'var(--ok)' }}>{data.stats.pass}</div><div className="k">passed</div></div>
@@ -154,7 +154,7 @@ export function CalibrationPage({ tab }: { tab: string }) {
   const tabs: [string, string, number | null][] = [['todo', 'To rate', data.todo], ['rated', 'Rated', cur ? cur.right + cur.wrong : 0], ['wrong', 'Reviewer wrong', cur?.wrong ?? 0]]
   return <div className="wrap">
     <h1>Reviewer tuning</h1>
-    <p className="desc">The reviewer with the current <span className="mono">rules.md</span> runs over a set of real edits. You rate its decisions:
+    <p className="desc">The reviewer with the current rules runs over a set of real edits. You rate its decisions:
       right or wrong, and what is off in the reasoning. From your ratings an agent in chat edits the rules and starts a new run — a new version.
       You switch the reviewer on when the result is good enough.</p>
     {data.versions.length > 0 && <table className="vt">

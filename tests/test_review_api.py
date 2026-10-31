@@ -33,7 +33,7 @@ class ReviewApiTest(unittest.TestCase):
 
     def verdict(self, v):
         return mock.patch.object(reviewer, 'run', return_value=({'verdict': v, 'what': 'Added X', 'where': 'SKILL.md',
-                                                                 'note': 'Wrong home', 'rule': 'Home' if v == 'reject' else ''}, 1.0))
+                                                                 'note': 'Wrong home', 'agent_note': '', 'rule': 'Home' if v == 'reject' else ''}, 1.0))
 
     def test_reject_blocks_with_note_and_is_recorded(self):
         with self.verdict('reject'):
@@ -42,6 +42,15 @@ class ReviewApiTest(unittest.TestCase):
         self.assertIn('Wrong home', r['message'])
         row = db.reviews()[0]
         self.assertEqual((row['status'], row['verdict'], row['skill'], row['what']), ('done', 'reject', 'my-skill', 'Added X'))
+
+    def test_agent_gets_english_note_user_sees_own_language(self):
+        verdict = {'verdict': 'reject', 'what': 'Добавлено X', 'where': 'SKILL.md', 'note': 'Не тот дом',
+                   'agent_note': 'Wrong home', 'rule': 'Home'}
+        with mock.patch.object(reviewer, 'run', return_value=(verdict, 1.0)):
+            r = self.client.post('/api/review', json=CALL).json()
+        self.assertIn('Wrong home', r['message'])
+        self.assertNotIn('Не тот дом', r['message'])
+        self.assertEqual(db.reviews()[0]['note'], 'Не тот дом')
 
     def test_pass_continues(self):
         with self.verdict('pass'):

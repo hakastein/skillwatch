@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- `rules` in `reviewer.yaml` points the reviewer at your own rules file.
+- `language` now sets only what the user reads; a rejected agent always gets the note in English.
+
 ## 0.1.0
 
 First public version.

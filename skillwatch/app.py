@@ -76,7 +76,7 @@ def review(payload: dict) -> dict:
     db.update_review(rid, status='done', verdict=verdict['verdict'], what=verdict['what'], where_=verdict['where'],
                      note=verdict['note'], rule=verdict['rule'], duration=round(took, 1))
     if verdict['verdict'] == 'reject':
-        return {'action': 'block', 'message': f"The edit reviewer rejected this write. {verdict['note']}\n"
+        return {'action': 'block', 'message': f"The edit reviewer rejected this write. {verdict['agent_note'] or verdict['note']}\n"
                                               f"Rule: {verdict['rule'] or '—'}. {REJECT_HINT}"}
     return {'action': 'continue'}
 
@@ -158,7 +158,8 @@ def memory(key: str) -> dict:
 @app.get('/api/rules')
 def rules() -> dict:
     revs = db.reviews("mode in ('live', 'retro') and status='done'")
-    return {'text': reviewer.RULES.read_text(encoding='utf-8'), 'review_on': REVIEW_ON,
+    path = reviewer.rules_path()
+    return {'text': path.read_text(encoding='utf-8'), 'path': path.name, 'review_on': REVIEW_ON,
             'stats': {'pass': sum(r['verdict'] == 'pass' for r in revs), 'reject': sum(r['verdict'] == 'reject' for r in revs),
                       'by_rule': Counter(r['rule'] for r in revs if r['verdict'] == 'reject' and r['rule'])}}
 

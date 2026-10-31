@@ -28,7 +28,7 @@ export type Tree = { skills: Skill[]; profiles: { key: string; label: string; ha
 export type Feed = { total: number; events: Event[]; summary: { pass: number; reject: number; unreviewed: number } }
 export type SkillDetail = { name: string; copies: Skill[]; files: { path: string; text: string | null }[]; history: Event[] }
 export type Memory = { key: string; label: string; files: Record<string, string>; limits: Record<string, number>; history: Event[] }
-export type Rules = { text: string; review_on: boolean; stats: { pass: number; reject: number; by_rule: Record<string, number> } }
+export type Rules = { text: string; path: string; review_on: boolean; stats: { pass: number; reject: number; by_rule: Record<string, number> } }
 
 export async function get<T>(url: string): Promise<T> {
   const r = await fetch(url)

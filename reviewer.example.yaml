@@ -5,7 +5,8 @@ reviewer:
   model: claude-sonnet-5
   reasoning: medium            # Hermes reasoning effort: none, minimal, low, medium, high, xhigh
   timeout: 240                 # seconds; the hook waits up to plugins.hook_callback_timeout (set it to 300)
-  language: English            # language of summaries and notes
+  language: English            # what you read in the window: summaries and notes; the writing agent always gets English
+  rules: rules.md              # the reviewer prompt; point it to your own copy (e.g. rules.local.md, git-ignored)
 
 calibration:
   reference_version: null      # a calibration run you trust; newer versions are compared against it

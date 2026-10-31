@@ -17,7 +17,6 @@ import yaml
 from . import sources
 
 ROOT = Path(__file__).resolve().parent.parent
-RULES = ROOT / 'rules.md'
 CONFIG = ROOT / 'reviewer.yaml'
 EXAMPLE_CONFIG = ROOT / 'reviewer.example.yaml'
 # The Hermes gateway runs the reviewer's turn, so a marker cannot travel through the environment: the reviewer runs with
@@ -44,7 +43,16 @@ def model_config(**override) -> dict:
 
 
 def language() -> str:
+    """Language of what the user reads: summaries and notes. Agents always get English."""
     return config()['reviewer'].get('language') or 'English'
+
+
+def rules_path() -> Path:
+    return ROOT / Path(config()['reviewer'].get('rules') or 'rules.md').expanduser()
+
+
+def rules_text() -> str:
+    return rules_path().read_text(encoding='utf-8')
 
 
 # ---- context
@@ -177,11 +185,12 @@ def build_prompt(*, tool: str, context: str, prof: sources.Profile, session_id: 
     intro = ('The edit is already applied; it comes from the ledger. Judge it as if it were only being proposed.' if retro else
              'The agent is about to make the write below. Decide whether to let it through or reject it.')
     lang = language()
+    agent_note = lang.casefold() != 'english'
     return f"""You review edits to the skills and memory of the Hermes agent. {intro}
 Everything needed for the decision is collected below. The read tools (read_file, search_files, skill_view) are for what is missing here: another file of the skill or a skill not included in the context. You only read.
 
 # Rules
-{RULES.read_text(encoding='utf-8')}
+{rules_text()}
 
 # The write
 Tool: {tool}. Profile: {prof.label}.
@@ -196,11 +205,11 @@ Tool: {tool}. Profile: {prof.label}.
 
 # Answer
 Answer with a single JSON object and no text around it:
-{{"verdict": "pass" or "reject", "what": "...", "where": "...", "note": "...", "rule": "..."}}
+{{"verdict": "pass" or "reject", "what": "...", "where": "...", "note": "...",{' "agent_note": "...",' if agent_note else ''} "rule": "..."}}
 - what: one sentence in {lang}, up to 110 characters, past tense: what exactly was added, removed or changed, and about what. No generic phrases like "updated the skill".
 - where: the file and the section inside it, e.g. "references/preview.md › Startup"; for memory — "MEMORY.md" or "USER.md".
-- note: in {lang}, as the "Note" section of the rules says.
-- rule: on reject — the heading of the violated rules section; on pass — an empty string.
+- note: in {lang}, as the "Note" section of the rules says; the user reads it.
+{'- agent_note: the same note in English; the agent that made the write receives it.' + chr(10) if agent_note else ''}- rule: on reject — the heading of the violated rules section; on pass — an empty string.
 """
 
 
@@ -208,7 +217,7 @@ def version_key(cfg: dict) -> tuple[str, dict]:
     """Everything decisions depend on: rules, model, output language and context layout. Same key, same version."""
     model = {k: cfg[k] for k in ('provider', 'model', 'reasoning')}
     meta = {**model, 'language': language(), 'context': CONTEXT_REV}
-    return json.dumps({**meta, 'rules': RULES.read_text(encoding='utf-8')}, ensure_ascii=False, sort_keys=True), meta
+    return json.dumps({**meta, 'rules': rules_text()}, ensure_ascii=False, sort_keys=True), meta
 
 
 # ---- running
@@ -222,7 +231,7 @@ def parse_verdict(text: str) -> dict:
         except json.JSONDecodeError:
             continue
         if isinstance(data, dict) and data.get('verdict') in ('pass', 'reject') and data.get('what'):
-            return {k: str(data.get(k) or '') for k in ('verdict', 'what', 'where', 'note', 'rule')}
+            return {k: str(data.get(k) or '') for k in ('verdict', 'what', 'where', 'note', 'agent_note', 'rule')}
     raise ReviewError(f'the reviewer returned no verdict: {text[-400:]!r}')
 
 

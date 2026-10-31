@@ -77,7 +77,16 @@ tool calls with "pre_tool_call plugin callback timed out or is still running".
 ### Choose the reviewer model
 
 Copy [`reviewer.example.yaml`](reviewer.example.yaml) to `reviewer.yaml` (git-ignored) and set any Hermes provider and
-model. Medium reasoning is enough: a review then takes about 20 s. `language` sets the language of summaries and notes.
+model. Medium reasoning is enough: a review then takes about 20 s.
+
+The reviewer prompt is yours to change:
+
+- `rules` — the rules file. Copy `rules.md` to `rules.local.md` (git-ignored), set `rules: rules.local.md` and edit it;
+  `git pull` will not touch your copy.
+- `language` — the language of what you read: change summaries and reviewer notes. The agent whose write was rejected
+  still gets the note in English, so agents keep talking to each other in English.
+
+Either change makes a new reviewer version: run `calibrate` to see how decisions moved.
 
 ## Use
 
