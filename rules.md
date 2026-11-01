@@ -15,6 +15,8 @@ A lesson changes behaviour compared to what a capable agent would do without it.
 
 A lesson is what the agent would not reach on its own: a non-obvious technique (compare the candidate against the base branch in the same harness), a quirk of this particular environment (which Hermes tool shows the user a window and which opens a separate session), an agreement with the user.
 
+An explicit user correction of recurring agent behaviour is evidence of a lesson, even when a capable agent should already behave that way. Read the user's messages and judge the correction against the behaviour the user reports, not an ideal agent's duties. A faithful, lasting preference belongs in `USER.md`; "a basic agent duty" is not a reason to discard it. Other sections still apply: for Freshness, identify whether an existing entry already covers the whole correction or whether the write adds a missing condition or expected response.
+
 ## Home
 
 A lesson sits in the skill whose purpose (`description` and content) the situation belongs to. Each skill holds one context:
